@@ -689,11 +689,14 @@ function showScreen(id) {
 }
 
 function saveKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  if (!val.startsWith('sk-ant-')) { toast('Key should start with sk-ant-'); return; }
+  const raw = document.getElementById('api-key-input').value;
+  const val = raw.replace(/\s+/g, '').trim();
+  if (!val) { toast('Please enter your API key'); return; }
+  if (!val.startsWith('sk-ant-')) { toast('Key must start with sk-ant-'); return; }
   apiKey = val;
   localStorage.setItem('ahinsanama_key', val);
   showMain();
+  toast('Key saved — ' + val.slice(0,14) + '...');
 }
 
 function showMain() { showScreen('main'); }
@@ -873,14 +876,26 @@ async function sendMessage() {
     });
 
     const data = await res.json();
-    if (data.error) { removeThinking(); toast('Error: ' + data.error.message); return; }
+    if (data.error || res.status !== 200) {
+      removeThinking();
+      messages.pop();
+      if (res.status === 401) {
+        toast('Invalid API key — tap gear icon top right to reset');
+      } else {
+        toast('API error: ' + (data.error ? data.error.message : res.status));
+      }
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+      return;
+    }
 
     const reply = data.content[0].text;
     messages.push({ role: 'assistant', content: reply });
     appendAIMsg(reply, currentTone);
   } catch(e) {
     removeThinking();
-    toast('Something went wrong. Check your key.');
+    messages.pop();
+    toast('Network error — check connection');
   } finally {
     isLoading = false;
     document.getElementById('send-btn').disabled = false;
