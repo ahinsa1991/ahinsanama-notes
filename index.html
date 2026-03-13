@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Ahinsanama</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #e8e4dc;
+    --text-muted: #6b6660;
+    --text-dim: #3d3a36;
+    --accent: #c9a96e;
+    --accent-dim: #7a5f35;
+    --cunk: #7ecac3;
+    --parts: #9b8ec4;
+    --rez: #e8956d;
+    --funny: #c4c46e;
+    --danger: #c46e6e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; }
+  .screen.active { display: flex; }
+
+  /* ── SETUP SCREEN ── */
+  #setup {
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: var(--bg);
+  }
+
+  .setup-inner {
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: .25rem;
+    letter-spacing: -.01em;
+  }
+
+  .logo-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: .65rem;
+    color: var(--text-muted);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .setup-label {
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .setup-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .75rem 1rem;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    outline: none;
+    margin-bottom: 1rem;
+    transition: border-color .2s;
+  }
+
+  .setup-input:focus { border-color: var(--accent-dim); }
+
+  .setup-note {
+    font-size: .72rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0d0d0d;
+    border: none;
+    border-radius: 6px;
+    padding: .85rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+
+  .btn-primary:active { opacity: .8; }
+
+  /* ── MAIN SCREEN ── */
+  #main { background: var(--bg); }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .header-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    letter-spacing: -.01em;
+  }
+
+  .header-actions { display: flex; gap: .5rem; }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: .8rem;
+    transition: border-color .2s, color .2s;
+  }
+
+  .icon-btn:active { color: var(--accent); border-color: var(--accent-dim); }
+
+  /* Chat area */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .empty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .empty-sub {
+    font-size: .75rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .05em;
+  }
+
+  .spark-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    padding: .6rem 1rem;
+    font-size: .78rem;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+    margin-top: .5rem;
+  }
+
+  .spark-btn:active { border-color: var(--accent-dim); color: var(--accent); }
+
+  /* Messages */
+  .msg {
+    max-width: 100%;
+    animation: fadeUp .25s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-user {
+    align-self: flex-end;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px 12px 3px 12px;
+    padding: .75rem 1rem;
+    font-size: .85rem;
+    color: var(--text);
+    max-width: 85%;
+    white-space: pre-wrap;
+  }
+
+  .msg-ai {
+    align-self: flex-start;
+    width: 100%;
+  }
+
+  .msg-ai-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px 12px 12px 12px;
+    padding: 1rem;
+    position: relative;
+  }
+
+  .msg-mode-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: .6rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: .6rem;
+    opacity: .7;
+  }
+
+  .mode-cunk .msg-mode-tag { color: var(--cunk); }
+  .mode-parts .msg-mode-tag { color: var(--parts); }
+  .mode-rez .msg-mode-tag { color: var(--rez); }
+  .mode-funny .msg-mode-tag { color: var(--funny); }
+
+  .msg-ai-text {
+    font-size: .88rem;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .msg-ai-actions {
+    display: flex;
+    gap: .5rem;
+    margin-top: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    padding: .3rem .7rem;
+    font-size: .7rem;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+
+  .action-btn:active { border-color: var(--accent-dim); color: var(--accent); }
+  .action-btn.saved { color: var(--accent); border-color: var(--accent-dim); }
+
+  .msg-thinking {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem 0;
+  }
+
+  .dot-pulse {
+    display: flex; gap: 4px;
+  }
+
+  .dot-pulse span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  .dot-pulse span:nth-child(2) { animation-delay: .2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: .4s; }
+
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: .2; transform: scale(.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Input area */
+  .input-area {
+    border-top: 1px solid var(--border);
+    padding: .75rem;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  /* Tone buttons */
+  .tone-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .35rem;
+    margin-bottom: .6rem;
+  }
+
+  .tone-btn {
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: none;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: .58rem;
+    letter-spacing: .04em;
+    padding: .4rem .2rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    line-height: 1.3;
+  }
+
+  .tone-btn.active-cunk { border-color: var(--cunk); color: var(--cunk); background: rgba(126,202,195,.07); }
+  .tone-btn.active-parts { border-color: var(--parts); color: var(--parts); background: rgba(155,142,196,.07); }
+  .tone-btn.active-rez { border-color: var(--rez); color: var(--rez); background: rgba(232,149,109,.07); }
+  .tone-btn.active-funny { border-color: var(--funny); color: var(--funny); background: rgba(196,196,110,.07); }
+
+  /* Length + context row */
+  .meta-row {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .6rem;
+    align-items: center;
+  }
+
+  .length-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .length-opt {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: .62rem;
+    padding: .35rem .6rem;
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: .04em;
+  }
+
+  .length-opt.active {
+    background: var(--surface2);
+    color: var(--accent);
+  }
+
+  .context-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: .35rem .6rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: .65rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .context-input:focus { border-color: var(--border); color: var(--text); }
+  .context-input::placeholder { color: var(--text-dim); }
+
+  /* Main input row */
+  .input-row {
+    display: flex;
+    gap: .5rem;
+    align-items: flex-end;
+  }
+
+  .main-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .65rem .85rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .88rem;
+    outline: none;
+    resize: none;
+    min-height: 42px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color .2s;
+    overflow-y: auto;
+  }
+
+  .main-input:focus { border-color: var(--border); }
+  .main-input::placeholder { color: var(--text-dim); }
+
+  .send-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .15s;
+  }
+
+  .send-btn:active { opacity: .8; }
+  .send-btn:disabled { opacity: .35; cursor: default; }
+
+  .send-btn svg { width: 16px; height: 16px; fill: #0d0d0d; }
+
+  /* ── SAVED SCREEN ── */
+  #saved { background: var(--bg); }
+
+  .saved-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .saved-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: .65rem;
+    padding: .3rem .7rem;
+    cursor: pointer;
+  }
+
+  .saved-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .saved-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .875rem 1rem;
+  }
+
+  .saved-card-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: .6rem;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .saved-card-text {
+    font-size: .83rem;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .saved-card-actions {
+    display: flex;
+    gap: .5rem;
+    margin-top: .75rem;
+  }
+
+  .empty-saved {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: .75rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: .72rem;
+    text-align: center;
+    letter-spacing: .05em;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 6rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .5rem 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup" class="screen active">
+  <div class="setup-inner">
+    <div class="logo">Ahinsanama</div>
+    <div class="logo-sub">notes & thinking partner</div>
+    <div class="setup-label">Anthropic API key</div>
+    <input type="password" class="setup-input" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+    <div class="setup-note">Your key is stored only on this device. It goes directly to Anthropic — nowhere else. You can find it at console.anthropic.com.</div>
+    <button class="btn-primary" onclick="saveKey()">Enter</button>
+  </div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="main" class="screen">
+  <div class="header">
+    <div class="header-logo">Ahinsanama</div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="showSaved()" title="Saved">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="icon-btn" onclick="clearChat()" title="New chat">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="icon-btn" onclick="resetKey()" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chat-area">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-title">What are you seeing?</div>
+      <div class="empty-sub">dump a thought. pick a tone. get something rough.</div>
+      <button class="spark-btn" onclick="getSparks()">— what should I write today? —</button>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="tone-row">
+      <button class="tone-btn" id="tone-cunk" onclick="setTone('cunk')">Cunk<br>mode</button>
+      <button class="tone-btn" id="tone-parts" onclick="setTone('parts')">Parts<br>Unknown</button>
+      <button class="tone-btn" id="tone-rez" onclick="setTone('rez')">No<br>Reservations</button>
+      <button class="tone-btn" id="tone-funny" onclick="setTone('funny')">Just<br>funny</button>
+    </div>
+    <div class="meta-row">
+      <div class="length-toggle">
+        <button class="length-opt active" id="len-note" onclick="setLength('note')">note</button>
+        <button class="length-opt" id="len-essay" onclick="setLength('essay')">essay</button>
+      </div>
+      <input type="text" class="context-input" id="context-input" placeholder="context: where, what just happened..." />
+    </div>
+    <div class="input-row">
+      <textarea class="main-input" id="main-input" placeholder="brain dump here..." rows="1"
+        oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVED SCREEN -->
+<div id="saved" class="screen">
+  <div class="saved-header">
+    <div class="saved-title">Saved</div>
+    <button class="back-btn" onclick="showMain()">← back</button>
+  </div>
+  <div class="saved-list" id="saved-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE_IDENTITY = `You are the writing voice of Ahinsa — a mid-thirties woman from South Asia. Policy researcher. Works in gender and development. Former Chevening Scholar. Has traveled to 15+ countries and writes about what she sees through the lens of a feminist, an outsider-insider, and someone who has read enough policy documents to know exactly how much the official version lies.
+
+Her Substack is called Ahinsanama. She writes about travel, safety, feminism, and culture — specifically how power shows up in public space, food, gender dynamics, and the way countries perform themselves for outsiders.
+
+Rules for output:
+- Output should be slightly rough. Real, not polished to death.
+- Do not explain the jokes.
+- Do not over-qualify.
+- Do not write like an NGO report.
+- Write like someone who is very smart, very tired, and occasionally very delighted.
+- Never use hollow phrases like "a tapestry of", "a testament to", or "in the heart of".
+- Do not moralize. The politics should be in the observation, not the conclusion.
+- Be specific. Specificity is everything.`;
+
+const TONES = {
+  cunk: `TONE — Cunk mode:
+Write like Philomena Cunk. Ask the obvious question that nobody asks. Treat the absurd with complete sincerity. The humour comes from the observation being both ridiculous and completely accurate. No winking at the camera. The narrator genuinely does not understand why this is funny — and that is why it is funny.`,
+
+  parts: `TONE — Parts Unknown:
+Write like late Bourdain. Slower. Let the political weight sit in the room. There is history here and you know it. Some melancholy. The personal and the geopolitical become the same sentence. Do not resolve the tension. End somewhere true but not comfortable.`,
+
+  rez: `TONE — No Reservations:
+Write like early Bourdain. Hungry, alive, a little reckless. Something delighted you and you are not embarrassed about it. Sensory. Moving. The world is terrible and also this exists. Let the joy in without apologising for it.`,
+
+  funny: `TONE — Just funny:
+Write like a South Asian woman who has a master's from Sussex, works in UN policy, and has completely run out of diplomatic language. The sarcasm is earned. The wit is specific. No generic jokes. The funny comes from the exact detail, not the setup. Dry. Precise. A little furious underneath.`
+};
+
+const LENGTHS = {
+  note: `LENGTH: Substack Note — under 250 words. Punchy. A complete thought. Could be posted right now. Leave it slightly rough at the edges.`,
+  essay: `LENGTH: Essay draft — 500 to 800 words. More room to breathe. Structure can be loose. This is a draft, not a final piece. Rough is fine.`
+};
+
+let apiKey = localStorage.getItem('ahinsanama_key') || '';
+let currentTone = null;
+let currentLength = 'note';
+let messages = [];
+let saved = JSON.parse(localStorage.getItem('ahinsanama_saved') || '[]');
+let isLoading = false;
+
+function init() {
+  if (apiKey) showMain();
+  else showScreen('setup');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function saveKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) { toast('Key should start with sk-ant-'); return; }
+  apiKey = val;
+  localStorage.setItem('ahinsanama_key', val);
+  showMain();
+}
+
+function showMain() { showScreen('main'); }
+function showSaved() { renderSaved(); showScreen('saved'); }
+function resetKey() {
+  if (confirm('Reset API key?')) {
+    localStorage.removeItem('ahinsanama_key');
+    apiKey = '';
+    showScreen('setup');
+  }
+}
+
+function setTone(t) {
+  currentTone = currentTone === t ? null : t;
+  document.querySelectorAll('.tone-btn').forEach(b => b.className = 'tone-btn');
+  if (currentTone) {
+    document.getElementById('tone-' + currentTone).classList.add('active-' + currentTone);
+  }
+}
+
+function setLength(l) {
+  currentLength = l;
+  document.querySelectorAll('.length-opt').forEach(b => b.classList.remove('active'));
+  document.getElementById('len-' + l).classList.add('active');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function clearChat() {
+  messages = [];
+  document.getElementById('chat-area').innerHTML = `<div class="empty-state" id="empty-state">
+    <div class="empty-title">What are you seeing?</div>
+    <div class="empty-sub">dump a thought. pick a tone. get something rough.</div>
+    <button class="spark-btn" onclick="getSparks()">— what should I write today? —</button>
+  </div>`;
+}
+
+function hideEmpty() {
+  const e = document.getElementById('empty-state');
+  if (e) e.remove();
+}
+
+function appendUserMsg(text) {
+  hideEmpty();
+  const div = document.createElement('div');
+  div.className = 'msg msg-user';
+  div.textContent = text;
+  document.getElementById('chat-area').appendChild(div);
+  scrollBottom();
+}
+
+function appendThinking() {
+  hideEmpty();
+  const div = document.createElement('div');
+  div.className = 'msg msg-thinking';
+  div.id = 'thinking';
+  div.innerHTML = `<div class="dot-pulse"><span></span><span></span><span></span></div>`;
+  document.getElementById('chat-area').appendChild(div);
+  scrollBottom();
+}
+
+function removeThinking() {
+  const t = document.getElementById('thinking');
+  if (t) t.remove();
+}
+
+function appendAIMsg(text, tone) {
+  removeThinking();
+  const modeClass = tone ? 'mode-' + tone : '';
+  const modeLabels = { cunk: 'Cunk mode', parts: 'Parts Unknown', rez: 'No Reservations', funny: 'Just funny' };
+  const label = tone ? modeLabels[tone] : 'Ahinsanama';
+  const id = 'msg-' + Date.now();
+
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai ' + modeClass;
+  div.innerHTML = `<div class="msg-ai-inner">
+    <div class="msg-mode-tag">${label}</div>
+    <div class="msg-ai-text">${escHtml(text)}</div>
+    <div class="msg-ai-actions">
+      <button class="action-btn" onclick="copyText('${id}')">copy</button>
+      <button class="action-btn" id="save-${id}" onclick="saveText('${id}', '${tone || ''}')">save</button>
+      <button class="action-btn" onclick="rewrite('${id}')">rewrite ↻</button>
+    </div>
+  </div>`;
+  div.setAttribute('data-text', text);
+  div.id = id;
+  document.getElementById('chat-area').appendChild(div);
+  scrollBottom();
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  const text = el.getAttribute('data-text');
+  navigator.clipboard.writeText(text).then(() => toast('copied')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); toast('copied');
+  });
+}
+
+function saveText(id, tone) {
+  const el = document.getElementById(id);
+  const text = el.getAttribute('data-text');
+  const item = { text, tone, date: new Date().toISOString(), id: Date.now() };
+  saved.unshift(item);
+  localStorage.setItem('ahinsanama_saved', JSON.stringify(saved));
+  const btn = document.getElementById('save-' + id);
+  if (btn) { btn.textContent = 'saved ✓'; btn.classList.add('saved'); }
+  toast('saved');
+}
+
+function rewrite(id) {
+  const el = document.getElementById(id);
+  const text = el.getAttribute('data-text');
+  const input = document.getElementById('main-input');
+  input.value = 'rewrite this differently: ' + text.slice(0, 120) + '...';
+  autoResize(input);
+  input.focus();
+}
+
+function scrollBottom() {
+  const c = document.getElementById('chat-area');
+  c.scrollTop = c.scrollHeight;
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('main-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const context = document.getElementById('context-input').value.trim();
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendUserMsg(text);
+  appendThinking();
+
+  let userContent = text;
+  if (context) userContent = `[Context: ${context}]\n\n${text}`;
+
+  const toneInstr = currentTone ? '\n\n' + TONES[currentTone] : '';
+  const lengthInstr = '\n\n' + LENGTHS[currentLength];
+  const systemPrompt = BASE_IDENTITY + toneInstr + lengthInstr;
+
+  messages.push({ role: 'user', content: userContent });
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        system: systemPrompt,
+        messages: messages
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) { removeThinking(); toast('Error: ' + data.error.message); return; }
+
+    const reply = data.content[0].text;
+    messages.push({ role: 'assistant', content: reply });
+    appendAIMsg(reply, currentTone);
+  } catch(e) {
+    removeThinking();
+    toast('Something went wrong. Check your key.');
+  } finally {
+    isLoading = false;
+    document.getElementById('send-btn').disabled = false;
+  }
+}
+
+async function getSparks() {
+  if (isLoading) return;
+  const context = document.getElementById('context-input').value.trim();
+  appendThinking();
+  isLoading = true;
+
+  const spark_prompt = `${BASE_IDENTITY}
+
+The user is blank today — they don't know what to write. Give them exactly 3 sharp Substack Note prompts in Ahinsa's voice. Each prompt should be one sentence — a hook, an observation, a provocation. Not generic. Rooted in her world: South Asia, gender, travel, power, safety, policy, the absurdity of it all. Number them 1, 2, 3. Nothing else.${context ? '\n\nContext today: ' + context : ''}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: spark_prompt,
+        messages: [{ role: 'user', content: 'what should I write today?' }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) { removeThinking(); toast('Error: ' + data.error.message); return; }
+    const reply = data.content[0].text;
+    messages.push({ role: 'user', content: 'what should I write today?' });
+    messages.push({ role: 'assistant', content: reply });
+    appendAIMsg(reply, null);
+  } catch(e) {
+    removeThinking();
+    toast('Something went wrong.');
+  } finally {
+    isLoading = false;
+  }
+}
+
+function renderSaved() {
+  const list = document.getElementById('saved-list');
+  if (!saved.length) {
+    list.innerHTML = '<div class="empty-saved"><div>nothing saved yet</div><div style="color:var(--text-dim)">hit save on any output</div></div>';
+    return;
+  }
+  const modeLabels = { cunk: 'Cunk', parts: 'Parts Unknown', rez: 'No Reservations', funny: 'Just funny', '': 'Ahinsanama' };
+  list.innerHTML = saved.map((item, i) => {
+    const d = new Date(item.date);
+    const dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const label = modeLabels[item.tone] || 'Ahinsanama';
+    return `<div class="saved-card">
+      <div class="saved-card-meta">
+        <span>${label}</span>
+        <span>${dateStr}</span>
+      </div>
+      <div class="saved-card-text">${escHtml(item.text)}</div>
+      <div class="saved-card-actions">
+        <button class="action-btn" onclick="copySaved(${i})">copy</button>
+        <button class="action-btn" onclick="deleteSaved(${i})" style="color:var(--danger)">delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copySaved(i) {
+  navigator.clipboard.writeText(saved[i].text).then(() => toast('copied')).catch(() => toast('copy failed'));
+}
+
+function deleteSaved(i) {
+  saved.splice(i, 1);
+  localStorage.setItem('ahinsanama_saved', JSON.stringify(saved));
+  renderSaved();
+  toast('deleted');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+init();
+</script>
+</body>
+</html>
